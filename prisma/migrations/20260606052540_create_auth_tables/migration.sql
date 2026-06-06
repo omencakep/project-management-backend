@@ -1,50 +1,70 @@
-/*
-  Warnings:
+-- CreateTable
+CREATE TABLE "users" (
+    "id" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "passwordHash" TEXT NOT NULL,
+    "firstName" TEXT,
+    "lastName" TEXT,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
-  - A unique constraint covering the columns `[code]` on the table `roles` will be added. If there are existing duplicate values, this will fail.
-  - Added the required column `code` to the `roles` table without a default value. This is not possible if the table is not empty.
+    CONSTRAINT "users_pkey" PRIMARY KEY ("id")
+);
 
-*/
--- DropForeignKey
-ALTER TABLE "role_permissions" DROP CONSTRAINT "role_permissions_permissionId_fkey";
+-- CreateTable
+CREATE TABLE "roles" (
+    "id" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
--- DropForeignKey
-ALTER TABLE "role_permissions" DROP CONSTRAINT "role_permissions_roleId_fkey";
+    CONSTRAINT "roles_pkey" PRIMARY KEY ("id")
+);
 
--- DropForeignKey
-ALTER TABLE "user_roles" DROP CONSTRAINT "user_roles_roleId_fkey";
+-- CreateTable
+CREATE TABLE "permissions" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
--- DropForeignKey
-ALTER TABLE "user_roles" DROP CONSTRAINT "user_roles_userId_fkey";
+    CONSTRAINT "permissions_pkey" PRIMARY KEY ("id")
+);
 
--- DropIndex
-DROP INDEX "roles_name_key";
+-- CreateTable
+CREATE TABLE "user_roles" (
+    "userId" TEXT NOT NULL,
+    "roleId" TEXT NOT NULL,
+    "assignedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
--- AlterTable
-ALTER TABLE "permissions" ADD COLUMN     "description" TEXT;
+    CONSTRAINT "user_roles_pkey" PRIMARY KEY ("userId","roleId")
+);
 
--- AlterTable
-ALTER TABLE "role_permissions" ADD COLUMN     "assignedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+-- CreateTable
+CREATE TABLE "role_permissions" (
+    "roleId" TEXT NOT NULL,
+    "permissionId" TEXT NOT NULL,
+    "assignedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
--- AlterTable
-ALTER TABLE "roles" ADD COLUMN     "code" TEXT NOT NULL;
-
--- AlterTable
-ALTER TABLE "user_roles" ADD COLUMN     "assignedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
-
--- AlterTable
-ALTER TABLE "users" ADD COLUMN     "firstName" TEXT,
-ADD COLUMN     "isActive" BOOLEAN NOT NULL DEFAULT true,
-ADD COLUMN     "lastName" TEXT;
+    CONSTRAINT "role_permissions_pkey" PRIMARY KEY ("roleId","permissionId")
+);
 
 -- CreateIndex
-CREATE INDEX "role_permissions_permissionId_idx" ON "role_permissions"("permissionId");
+CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "roles_code_key" ON "roles"("code");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "permissions_name_key" ON "permissions"("name");
+
+-- CreateIndex
 CREATE INDEX "user_roles_roleId_idx" ON "user_roles"("roleId");
+
+-- CreateIndex
+CREATE INDEX "role_permissions_permissionId_idx" ON "role_permissions"("permissionId");
 
 -- AddForeignKey
 ALTER TABLE "user_roles" ADD CONSTRAINT "user_roles_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;

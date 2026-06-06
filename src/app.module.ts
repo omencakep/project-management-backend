@@ -4,6 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
+import { TasksModule } from './modules/tasks/tasks.module';
 
 @Module({
   imports: [
@@ -12,8 +13,9 @@ import { AuthModule } from './auth/auth.module';
     }),
 
     PrismaModule,
-
     AuthModule,
+    // Tasks module provides task CRUD and status updates
+    TasksModule,
   ],
 })
 export class AppModule {}
