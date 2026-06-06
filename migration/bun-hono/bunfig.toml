@@ -1,0 +1,7 @@
+[build]
+minify = false
+entry_points = ["./src/app.ts"]
+
+[package]
+# This will be populated by bun when you install
+type = "module"
