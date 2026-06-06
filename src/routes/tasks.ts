@@ -17,7 +17,7 @@ import {
 const app = new Hono<{ Variables: { userCtx: UserContext } }>();
 app.use('*', requireAuth);
 
-app.post('/:projectId/tasks', requireRole(['PROJECT_MANAGER']), async (c) => {
+app.post('/projects/:projectId/tasks', requireRole(['PROJECT_MANAGER']), async (c) => {
   try {
     const task = await TaskService.create(
       c.req.param('projectId'),
@@ -31,7 +31,7 @@ app.post('/:projectId/tasks', requireRole(['PROJECT_MANAGER']), async (c) => {
   }
 });
 
-app.get('/:projectId/tasks', async (c) => {
+app.get('/projects/:projectId/tasks', async (c) => {
   try {
     const { take, skip, search, status } = paginationSchema.parse({
       take: c.req.query('take'),
@@ -182,6 +182,15 @@ app.post('/tasks/:id/attachments', async (c) => {
 app.get('/tasks/:id/attachments', async (c) => {
   try {
     return c.json({ data: await TaskService.listAttachments(c.req.param('id'), c.get('userCtx')) });
+  } catch (err) {
+    const { status, body } = handleError(err);
+    return c.json(body, status as never);
+  }
+});
+
+app.get('/tasks/:id/audit-logs', async (c) => {
+  try {
+    return c.json({ data: await TaskService.listAuditLogs(c.req.param('id'), c.get('userCtx')) });
   } catch (err) {
     const { status, body } = handleError(err);
     return c.json(body, status as never);

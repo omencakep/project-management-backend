@@ -341,4 +341,11 @@ export const TaskService = {
     });
     return { id: commentId, deletedAt: new Date().toISOString() };
   },
+  async listAuditLogs(taskId: string, user: UserContext) {
+    await ensureTaskAccess(taskId, user);
+    return prisma.auditLog.findMany({
+      where: { entity: 'Task', entityId: taskId },
+      orderBy: { createdAt: 'desc' },
+    });
+  },
 };
