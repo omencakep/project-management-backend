@@ -235,6 +235,7 @@ async function main() {
       email: 'fe@example.com',
       firstName: 'Frontend',
       lastName: 'Engineer',
+      department: 'FRONTEND',
       passwordHash: internalPassword,
     },
   });
@@ -247,6 +248,7 @@ async function main() {
       email: 'client@example.com',
       firstName: 'Acme',
       lastName: 'Client',
+      department: 'CLIENT',
       passwordHash: clientPassword,
     },
   });

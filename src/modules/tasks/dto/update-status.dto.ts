@@ -1,10 +1,11 @@
-import { IsString, IsNumber, IsOptional } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsString, IsNumber } from 'class-validator';
 
 export class UpdateStatusDto {
   @IsString()
   status: string;
 
-  @IsOptional()
+  @Type(() => Number)
   @IsNumber()
-  version?: number;
+  version: number;
 }

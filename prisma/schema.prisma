@@ -13,6 +13,8 @@ model User {
 
   firstName    String?
   lastName     String?
+  // department examples: PRODUCT, UIUX, FRONTEND, BACKEND, CLIENT
+  department   String?
 
   isActive     Boolean  @default(true)
 

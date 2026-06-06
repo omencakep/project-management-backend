@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 
 import { PassportStrategy } from '@nestjs/passport';
 
@@ -42,6 +42,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       },
     });
 
+    if (!user || !user.isActive) {
+      throw new UnauthorizedException('Invalid or inactive session');
+    }
+
     const roles = user?.userRoles.map((ur) => ur.role.code);
 
     const permissions = [
@@ -55,6 +59,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     return {
       userId: user?.id,
       email: user?.email,
+      department: (user as any)?.department,
       roles,
       permissions,
     };
