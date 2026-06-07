@@ -187,6 +187,23 @@ export const TaskService = {
 
     return created;
   },
+  async removeDependency(taskId: string, dependsOnId: string, user: UserContext) {
+    const task = await ensureTaskAccess(taskId, user);
+    await ensureTaskAccess(dependsOnId, user);
+    const deleted = await prisma.taskDependency.deleteMany({
+      where: { taskId, dependsOnId },
+    });
+    if (deleted.count === 0) throw new AppError(404, 'Dependency not found', 'NOT_FOUND');
+    await writeAuditLog({
+      entity: 'TaskDependency',
+      entityId: task.id,
+      userId: user?.id,
+      column: 'deleted',
+      oldValue: { taskId, dependsOnId },
+      newValue: null,
+    });
+    return { taskId, dependsOnId };
+  },
   async listByProject(projectId: string, user: UserContext, opts?: { take?: number; skip?: number; search?: string; status?: string }) {
     await assertProjectAccess(projectId, user);
     const access = getAccessLevel(user);
@@ -242,6 +259,44 @@ export const TaskService = {
       oldValue: task.description,
       newValue: description,
     });
+    return this.getById(taskId, user);
+  },
+  async updateTask(
+    taskId: string,
+    data: { title?: string; description?: string; assigneeId?: string | null; clientVisible?: boolean },
+    version: number,
+    user: UserContext,
+    ) {
+    const task = await ensureTaskAccess(taskId, user);
+    const updated = await prisma.task.updateMany({
+      where: { id: taskId, version },
+      data: {
+        ...(data.title !== undefined ? { title: data.title } : {}),
+        ...(data.description !== undefined ? { description: data.description } : {}),
+        ...(data.assigneeId !== undefined ? { assigneeId: data.assigneeId } : {}),
+        ...(data.clientVisible !== undefined ? { clientVisible: data.clientVisible } : {}),
+        version: { increment: 1 },
+      },
+    });
+    if (updated.count === 0) throw new AppError(409, 'Task was updated by another user', 'CONFLICT');
+    const entries = [
+      data.title !== undefined ? ['title', task.title, data.title] : null,
+      data.description !== undefined ? ['description', task.description, data.description] : null,
+      data.assigneeId !== undefined ? ['assigneeId', task.assigneeId, data.assigneeId] : null,
+      data.clientVisible !== undefined ? ['clientVisible', task.clientVisible, data.clientVisible] : null,
+    ].filter(Boolean) as Array<[string, unknown, unknown]>;
+    await Promise.all(
+      entries.map(([column, oldValue, newValue]) =>
+        writeAuditLog({
+          entity: 'Task',
+          entityId: taskId,
+          userId: user?.id,
+          column,
+          oldValue,
+          newValue,
+        }),
+      ),
+    );
     return this.getById(taskId, user);
   },
   async updateAssignee(taskId: string, assigneeId: string | null, version: number, user: UserContext) {
@@ -346,6 +401,7 @@ export const TaskService = {
     return prisma.auditLog.findMany({
       where: { entity: 'Task', entityId: taskId },
       orderBy: { createdAt: 'desc' },
+      take: 5,
     });
   },
 };

@@ -10,8 +10,10 @@ import {
   taskAssigneeUpdateSchema,
   taskCreateSchema,
   taskDependencyCreateSchema,
+  taskDependencyDeleteSchema,
   taskDescriptionUpdateSchema,
   taskStatusUpdateSchema,
+  taskUpdateSchema,
 } from '../validators';
 
 const app = new Hono<{ Variables: { userCtx: UserContext } }>();
@@ -90,6 +92,28 @@ app.patch('/tasks/:id/description', requireRole(['PROJECT_MANAGER']), async (c) 
   }
 });
 
+app.patch('/tasks/:id', requireRole(['PROJECT_MANAGER']), async (c) => {
+  try {
+    const body = taskUpdateSchema.parse(await c.req.json());
+    return c.json({
+      data: await TaskService.updateTask(
+        c.req.param('id'),
+        {
+          title: body.title,
+          description: body.description,
+          assigneeId: body.assigneeId,
+          clientVisible: body.clientVisible,
+        },
+        body.version,
+        c.get('userCtx'),
+      ),
+    });
+  } catch (err) {
+    const { status, body } = handleError(err);
+    return c.json(body, status as never);
+  }
+});
+
 app.patch('/tasks/:id/assignee', requireRole(['PROJECT_MANAGER']), async (c) => {
   try {
     const body = taskAssigneeUpdateSchema.parse(await c.req.json());
@@ -116,6 +140,18 @@ app.post('/tasks/:id/dependencies', requireRole(['PROJECT_MANAGER']), async (c) 
       },
       201,
     );
+  } catch (err) {
+    const { status, body } = handleError(err);
+    return c.json(body, status as never);
+  }
+});
+
+app.delete('/tasks/:id/dependencies', requireRole(['PROJECT_MANAGER']), async (c) => {
+  try {
+    const body = taskDependencyDeleteSchema.parse(await c.req.json());
+    return c.json({
+      data: await TaskService.removeDependency(c.req.param('id'), body.dependsOnId, c.get('userCtx')),
+    });
   } catch (err) {
     const { status, body } = handleError(err);
     return c.json(body, status as never);

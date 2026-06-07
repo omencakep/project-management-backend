@@ -44,12 +44,33 @@ export const taskDescriptionUpdateSchema = z.object({
   version: z.coerce.number().int().positive(),
 });
 
+export const taskUpdateSchema = z
+  .object({
+    title: z.string().trim().min(1).optional(),
+    description: z.string().trim().min(1).optional(),
+    assigneeId: z.string().trim().uuid().nullable().optional(),
+    clientVisible: z.boolean().optional(),
+    version: z.coerce.number().int().positive(),
+  })
+  .refine(
+    (data) =>
+      data.title !== undefined ||
+      data.description !== undefined ||
+      data.assigneeId !== undefined ||
+      data.clientVisible !== undefined,
+    { message: 'At least one field is required' },
+  );
+
 export const taskAssigneeUpdateSchema = z.object({
   assigneeId: z.string().trim().uuid().nullable().optional(),
   version: z.coerce.number().int().positive(),
 });
 
 export const taskDependencyCreateSchema = z.object({
+  dependsOnId: z.string().trim().uuid(),
+});
+
+export const taskDependencyDeleteSchema = z.object({
   dependsOnId: z.string().trim().uuid(),
 });
 
