@@ -1,1 +1,3 @@
-export {};
+import app from '../src/app';
+
+export default app.fetch;

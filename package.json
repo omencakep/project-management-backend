@@ -15,7 +15,8 @@
     "prisma:generate": "bunx prisma generate",
     "prisma:migrate": "bunx prisma migrate deploy",
     "prisma:seed": "bunx prisma db seed",
-    "test": "bun test"
+    "test": "bun test",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@hono/node-server": "^1.11.1",
