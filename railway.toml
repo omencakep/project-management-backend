@@ -1,5 +1,5 @@
 [build]
-buildCommand = "bun install"
+buildCommand = "bun install && bunx prisma generate && bunx prisma migrate deploy"
 
 [deploy]
 startCommand = "bun run src/index.ts"
