@@ -1,3 +1,8 @@
-import app from '../src/app';
+import app from './app';
 
-export default app.fetch;
+Bun.serve({
+  port: process.env.PORT ?? 3000,
+  fetch: app.fetch,
+});
+
+console.log(`Server running on port ${process.env.PORT ?? 3000}`);
